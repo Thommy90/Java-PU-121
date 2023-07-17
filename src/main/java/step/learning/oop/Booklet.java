@@ -15,4 +15,9 @@ public class Booklet extends Literature{
     }
 
     private String Publisher;
+
+    @Override
+    public String getCard() {
+        return String.format("Booklet: %s '%s'", this.getPublisher(), super.getTitle());
+    }
 }

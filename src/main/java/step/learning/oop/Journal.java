@@ -1,6 +1,6 @@
 package step.learning.oop;
 
-public class Journal extends Literature{
+public class Journal extends Literature implements Copyable, Periodic{
     public int getNumber() {
         return number;
     }
@@ -10,4 +10,19 @@ public class Journal extends Literature{
     }
 
     private int number;
+
+    public Journal(String title, int number) {
+        super();//делегирование конструктора - демонстрация
+        super.setTitle(title);
+        this.setNumber( number ) ;
+    }
+
+    @Override
+    public String getCard() {
+        return String.format("Journal: %s No. '%d'", super.getTitle(), this.getNumber());
+    }
+    @Override
+    public String getPeriod() {
+        return "Monthly";
+    }
 }

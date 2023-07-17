@@ -15,4 +15,9 @@ public class Book extends Literature {
     }
 
     private String author;
+
+    @Override
+    public String getCard() {
+        return String.format("Book: %s '%s'", this.getAuthor(), super.getTitle());
+    }
 }
