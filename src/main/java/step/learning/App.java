@@ -1,6 +1,7 @@
 package step.learning;
 
 import step.learning.control.ControlDemo;
+import step.learning.files.FileDemo;
 import step.learning.oop.Library;
 
 /**
@@ -13,7 +14,8 @@ public class App
     {
         //System.out.println( "Hello World!" );
         //new ControlDemo().run();
-        new Library().showCatalog();
+       // new Library().showCatalog();
+        new FileDemo().run();
     }
 
 }
