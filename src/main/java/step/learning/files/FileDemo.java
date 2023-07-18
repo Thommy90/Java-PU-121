@@ -126,6 +126,8 @@ public class FileDemo {
             } catch (IOException e) {
                 System.err.println(e.getMessage());
             }
+             fileContent = attr.creationTime().toString().replace('T', ' ').replace('Z', ' ') + "\t" +
+                    attr.size() + "\t" + currentDir.getName() + "\n";
         }
         try ( FileWriter writer =  new FileWriter("dir.txt") ) {
             writer.write(fileContent);
