@@ -82,7 +82,7 @@ public class FileDemo {
         Scanner scanner = new Scanner(System.in);
         System.out.print("Enter directory for scanning: ");
         File currentDir = new File(scanner.nextLine());
-
+        String fileContent = "";
         if(currentDir.isDirectory()){
             File[] files = currentDir.listFiles();
             if(files != null)
@@ -100,6 +100,10 @@ public class FileDemo {
                                 file.isDirectory() ? "\t" : attr.size(),
                                 file.getName()
                         );
+                        String Content =  attr.creationTime().toString().replace('T', ' ').replace('Z', ' ') + "\t" +
+                                (file.isDirectory() ? "<DIR>\t" : "\t") + ( file.isDirectory() ? "\t" : attr.size()) + "\t" + file.getName() + "\n";
+                        fileContent += Content;
+
                     } catch (IOException e) {
                         System.err.println(e.getMessage());
                     }
@@ -122,8 +126,12 @@ public class FileDemo {
             } catch (IOException e) {
                 System.err.println(e.getMessage());
             }
-
-
+        }
+        try ( FileWriter writer =  new FileWriter("dir.txt") ) {
+            writer.write(fileContent);
+            System.out.println("Write success");
+        } catch (IOException ex) {
+            System.err.println(ex.getMessage() );
         }
     }
 
