@@ -1,7 +1,9 @@
 package step.learning;
 
 import step.learning.control.ControlDemo;
+import step.learning.db.dbDemo;
 import step.learning.files.FileDemo;
+import step.learning.files.GsonDemo;
 import step.learning.oop.Library;
 
 /**
@@ -15,7 +17,11 @@ public class App
         //System.out.println( "Hello World!" );
         //new ControlDemo().run();
        // new Library().showCatalog();
-        new FileDemo().run();
+       // new FileDemo().run();
+       // new GsonDemo().run();
+        new Library().save();
+        new Library().load("library.txt");
+       // new dbDemo().run();
     }
 
 }
