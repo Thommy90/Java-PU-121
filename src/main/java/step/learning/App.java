@@ -19,9 +19,10 @@ public class App
        // new Library().showCatalog();
        // new FileDemo().run();
        // new GsonDemo().run();
-        new Library().save();
-        new Library().load("library.txt");
-       // new dbDemo().run();
+       // new Library().save();
+       // new Library().load("library.txt");
+       // new dbDemo().run2();
+        new dbDemo().run();
     }
 
 }

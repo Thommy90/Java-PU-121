@@ -1,14 +1,15 @@
 package step.learning.db;
 
 import com.mysql.cj.jdbc.Driver;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.json.JSONObject;
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Scanner;
 
 public class dbDemo {
     private String url;
@@ -17,6 +18,33 @@ public class dbDemo {
     private com.mysql.cj.jdbc.Driver mysqlDriver;
     private java.sql.Connection connection;
     public void run() {
+        System.out.println("How many rows add?");
+        Scanner scanner = new Scanner(System.in);
+        int rows = scanner.nextInt();
+
+            JSONObject conf = this.config();
+            JSONObject dbconf = conf
+                    .getJSONObject("DataProviders")
+                    .getJSONObject("PlanetScale");
+            url = dbconf.getString("url");
+            user = dbconf.getString("user");
+            password = dbconf.getString("password");
+            // System.out.println(url); System.out.println(user); System.out.println(password);
+            if ((connection = this.connect()) == null) {
+                return;
+            }
+        for (int i = 0; i < rows; i++) {
+            int numInt = (int) (Math.random() * 999);
+            String generatedString = RandomStringUtils.randomAlphanumeric(20);
+            double numDouble = Math.random() * 999;
+            String sql = "INSERT INTO jpu121_randoms(`id`, `val_int`, `val_str`,`val_float`) VALUES( UUID(), "+ numInt + ", \'"+ generatedString + "\', "+ numDouble + " )";
+            try (Statement statement = this.connection.createStatement()) {
+                statement.executeUpdate(sql);
+            } catch (SQLException e) {
+                System.err.println(e.getMessage());
+            }
+        }
+            this.disconect();
 
     }
     public void run2() {
