@@ -6,18 +6,18 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
+import java.util.Random;
 import java.util.Scanner;
 
 public class dbDemo {
+    private Random random = new Random();
     private String url;
     private String user;
     private String password;
     private com.mysql.cj.jdbc.Driver mysqlDriver;
     private java.sql.Connection connection;
-    public void run() {
+    public void insertRandom() {
         System.out.println("How many rows add?");
         Scanner scanner = new Scanner(System.in);
         int rows = scanner.nextInt();
@@ -47,7 +47,99 @@ public class dbDemo {
             this.disconect();
 
     }
-    public void run2() {
+
+    private void showRandoms(){
+        String sql = "SELECT * FROM jpu121_randoms" ; // ';' в конце SQL команды не нужна
+        try (Statement statement = this.connection.createStatement()) {
+            ResultSet res = statement.executeQuery(sql); // ADO ~ SqoDataReader
+            // ResultSet res - обьект для трансфера данных, что есть результатом запроса
+            // Особенность БД - работа с большими данными, что означает отстутсвие одного результата
+            // та получения данных строки - за строкой (итерувания)
+            // res.next() - получение новой строки (если есть - true, нету - false)
+            while ( res.next() ){
+                System.out.printf( "%s %d %s %f %n", // данные строки доступные через get-теры
+                res.getString( 1 ), // !!! JDBC запрос начинается с 1 !!!
+                res.getInt("val_int"), // за именем колонки
+                res.getString("val_str"),
+                res.getFloat("val_float")
+                );
+            }
+            res.close();
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+        }
+    }
+
+    private void ShowRowsCountInSegment(int num1, int num2){
+        String sql = "SELECT * FROM jpu121_randoms WHERE (val_int >= " + num1 +") AND (val_int <= " + num2 +")" ;
+        try (PreparedStatement statement = this.connection.prepareStatement(sql)) {
+            ResultSet res = statement.executeQuery();
+            while ( res.next() ){
+                System.out.printf( "%s %d %s %f %n",
+                        res.getString( 1 ),
+                        res.getInt("val_int"),
+                        res.getString("val_str"),
+                        res.getFloat("val_float")
+                );
+            }
+            res.close();
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+        }
+    }
+
+    private void insertPrepared(){
+        // подготовленные (prepared) запросы - можно считать тимчасовым сохранением процедур
+        // (скомпелированные запросы, которые сохраняются с боку СУБД)
+        // Идкя - запрос комплелируется и скомпелированный код сохраняется у СУБД в течении
+        // открытого соединения. В течении этого времени запрос можно повторить, в тч с другими
+        // параметрами
+        String sql = "INSERT INTO jpu121_randoms(`id`, `val_int`, `val_str`,`val_float`)" +
+                " VALUES( UUID(), ?, ?, ? )";
+        /*
+        Места для вариативных данных меняются на ? , неизмененные данный (типо UUID) остаются в запросе
+        Если значения берутся в лапки, то знаки ? все равно без лопок
+         */
+        try ( PreparedStatement prep = this.connection.prepareStatement( sql )) {
+            prep.setInt (1, random.nextInt());
+            prep.setString(2, random.nextInt() + "");
+            prep.setDouble(3, random.nextDouble());
+            prep.execute();
+            System.out.println("INSER OK");
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+        }
+    }
+
+    private void ShowRandomsCount(){
+        try ( PreparedStatement prep = this.connection.prepareStatement( "SELECT COUNT(id) FROM jpu121_randoms")) {
+            ResultSet res = prep.executeQuery();
+            res.next();
+            /*        Java                                                  DB
+   prepareStatement                                           proc_tmp() {
+"SELECT COUNT(id) FROM jpu121_randoms"     ---------------->    return SELECT COUNT(id) FROM jpu121_randoms }
+   res = prep.executeQuery()               ----------------> CALL proc_tmp() --> Iterator#123
+       (res==Iterator#123)               <-- Iterator#123 --
+   res.next()                              ---------------->   Iterator#123.getNext() - береться 1й рядок
+                                        <-- noname: 7 ------
+   res.getInt( 1 ) - 7
+ */
+            System.out.println("Rows count: " + res.getInt(1));
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+        }
+    }
+
+    private void rowsCountInSegment(int num1, int num2){
+        try ( PreparedStatement prep = this.connection.prepareStatement( "SELECT COUNT(id) FROM jpu121_randoms WHERE (val_int >= " + num1 +") AND (val_int <= " + num2 +") ")) {
+            ResultSet res = prep.executeQuery();
+            res.next();
+            System.out.println("Rows count with col 'val_int' from " + num1 + " to " + num2 + ": " + res.getInt(1));
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+        }
+    }
+    public void run() {
         System.out.println("Database Demo");
         JSONObject conf = this.config();
         JSONObject dbconf = conf
@@ -63,7 +155,11 @@ public class dbDemo {
         System.out.println("connection OK");
 
         ensureCreated();
-
+        //insertPrepared();
+        //showRandoms();
+        //ShowRandomsCount();
+        rowsCountInSegment(1, 500);
+        ShowRowsCountInSegment(1, 500);
         this.disconect();
     }
     private void ensureCreated(){
