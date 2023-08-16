@@ -158,8 +158,8 @@ public class dbDemo {
         //insertPrepared();
         //showRandoms();
         //ShowRandomsCount();
-        rowsCountInSegment(1, 500);
-        ShowRowsCountInSegment(1, 500);
+        rowsCountInSegment(10, 100);
+        ShowRowsCountInSegment(10, 100);
         this.disconect();
     }
     private void ensureCreated(){
