@@ -3,15 +3,22 @@ package step.learning.db;
 import com.mysql.cj.jdbc.Driver;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.json.JSONObject;
+import step.learning.db.dao.ReacordDao;
+import step.learning.db.dto.Record;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.sql.*;
+import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
+import java.util.UUID;
 
 public class dbDemo {
     private Random random = new Random();
+    private ReacordDao recordDao;
+
     private String url;
     private String user;
     private String password;
@@ -89,45 +96,66 @@ public class dbDemo {
     }
 
     private void insertPrepared(){
-        // подготовленные (prepared) запросы - можно считать тимчасовым сохранением процедур
-        // (скомпелированные запросы, которые сохраняются с боку СУБД)
-        // Идкя - запрос комплелируется и скомпелированный код сохраняется у СУБД в течении
-        // открытого соединения. В течении этого времени запрос можно повторить, в тч с другими
-        // параметрами
-        String sql = "INSERT INTO jpu121_randoms(`id`, `val_int`, `val_str`,`val_float`)" +
-                " VALUES( UUID(), ?, ?, ? )";
-        /*
-        Места для вариативных данных меняются на ? , неизмененные данный (типо UUID) остаются в запросе
-        Если значения берутся в лапки, то знаки ? все равно без лопок
-         */
-        try ( PreparedStatement prep = this.connection.prepareStatement( sql )) {
-            prep.setInt (1, random.nextInt());
-            prep.setString(2, random.nextInt() + "");
-            prep.setDouble(3, random.nextDouble());
-            prep.execute();
-            System.out.println("INSER OK");
-        } catch (SQLException e) {
-            System.err.println(e.getMessage());
+        if (recordDao.insertPrepared())
+        {
+            System.out.println("Insert OK");
+        }
+        else{
+            System.out.println("Insert false");
+        }
+    }
+
+    private void deleteById(UUID id){
+        if (recordDao.deleteById(id))
+        {
+            System.out.println("Delete is OK with ID: " + id.toString());
+        }
+        else{
+            System.out.println("Delete is false");
+        }
+    }
+
+    private void delete(Record record){
+        if (recordDao.delete(record))
+        {
+            System.out.println("Delete is OK with ID: " + record.getId().toString());
+        }
+        else{
+            System.out.println("Delete is false");
+        }
+    }
+
+    private void update(Record record, int num, String str, double num2){
+        if (recordDao.update(record, num, str, num2))
+        {
+            System.out.println("Update is OK with ID: " + record.getId().toString() +" with new parameters: valInt: "
+            + num + " valStr: " + str + " valFloat: " + num2 );
+        }
+        else{
+            System.out.println("Update is false");
+        }
+    }
+    private void showAll (){
+        List<Record> records = recordDao.getAll();
+        if (records == null){
+            System.out.println("Error getting list");
+        }
+        else{
+            for(Record record : records ){
+                System.out.println(record);
+            }
         }
     }
 
     private void ShowRandomsCount(){
-        try ( PreparedStatement prep = this.connection.prepareStatement( "SELECT COUNT(id) FROM jpu121_randoms")) {
-            ResultSet res = prep.executeQuery();
-            res.next();
-            /*        Java                                                  DB
-   prepareStatement                                           proc_tmp() {
-"SELECT COUNT(id) FROM jpu121_randoms"     ---------------->    return SELECT COUNT(id) FROM jpu121_randoms }
-   res = prep.executeQuery()               ----------------> CALL proc_tmp() --> Iterator#123
-       (res==Iterator#123)               <-- Iterator#123 --
-   res.next()                              ---------------->   Iterator#123.getNext() - береться 1й рядок
-                                        <-- noname: 7 ------
-   res.getInt( 1 ) - 7
- */
-            System.out.println("Rows count: " + res.getInt(1));
-        } catch (SQLException e) {
-            System.err.println(e.getMessage());
-        }
+            int cnt = recordDao.getRandomsCount();
+            if (cnt == -1)
+            {
+                System.out.println("Count error");
+            }
+            else{
+                System.out.println("Rows count: " + cnt);
+            }
     }
 
     private void rowsCountInSegment(int num1, int num2){
@@ -154,29 +182,36 @@ public class dbDemo {
         }
         System.out.println("connection OK");
 
-        ensureCreated();
+        recordDao = new ReacordDao(random, connection) ;
+       if(recordDao.ensureCreated()) {
+           System.out.println("Ensure OK");
+       };
         //insertPrepared();
         //showRandoms();
         //ShowRandomsCount();
-        rowsCountInSegment(10, 100);
-        ShowRowsCountInSegment(10, 100);
+        //rowsCountInSegment(10, 100);
+        //ShowRowsCountInSegment(10, 100);
+        Record record = new Record();
+        record.setId(UUID.fromString("5b26e51c-12a0-4b4b-853f-d850f313f746"));
+        record.setValInt(100);
+        record.setValFloat(100.500);
+        record.setValStr("Hello");
+        recordDao.create(record);
+        System.out.println(record.getId());
+        System.out.println(
+                recordDao.getById(record.getId()
+                )
+        );
+        update(record, 500, "NewStr", 5.5);
+        System.out.println("-------------------------------------------------");
+      //  showAll();
+        System.out.println(
+                recordDao.getById(record.getId()
+                )
+        );
         this.disconect();
     }
-    private void ensureCreated(){
-        String sql = "CREATE TABLE IF NOT EXISTS jpu121_randoms (" +
-                "`id` CHAR(36) PRIMARY KEY, " +
-                "`val_int` INT," +
-                "`val_str` VARCHAR(256)," +
-                "`val_float` FLOAT" +
-                ")";
-        System.out.println("ensureCreated: ");
-        try(Statement statement = this.connection.createStatement()){  // ADO.NET: SqlCommand
-            statement.executeUpdate( sql ); //executeUpdate - для запроса без возвращения
-            System.out.println("OK");
-        } catch (SQLException e) {
-            System.err.println( e.getMessage());
-        }
-    }
+
     private java.sql.Connection connect() {
         // регистрируем драйвер
         //а) через Class.forName("com.mysql.cj.jdbc.Driver");
@@ -233,4 +268,33 @@ public class dbDemo {
   option: URL Only
   вводим данные с конфигурации
   Test Connection - Apply - OK
+ */
+
+
+/*
+DTO, DAO
+DTO - Data Transfer Object - обьект для передачи данных - структура, которы содержит
+поля, их аксесоры, конструкторы та утилиты (toString(), to Json(), и тд). Не содержат логику
+Аналог - сутность(Entity)
+
+DAO - Data Acess Object - обьект доступа к данным - логика работы с обьектом DTO. Аналог LINQ
+
+Например
+UserDTO {
+private UUID id; String name;
+public UUID getId()...
+}
+UserDAO{
+public UserDTO getUserById(UUID id){...}
+}
+ */
+
+           /*        Java                                                  DB
+   prepareStatement                                           proc_tmp() {
+"SELECT COUNT(id) FROM jpu121_randoms"     ---------------->    return SELECT COUNT(id) FROM jpu121_randoms }
+   res = prep.executeQuery()               ----------------> CALL proc_tmp() --> Iterator#123
+       (res==Iterator#123)               <-- Iterator#123 --
+   res.next()                              ---------------->   Iterator#123.getNext() - береться 1й рядок
+                                        <-- noname: 7 ------
+   res.getInt( 1 ) - 7
  */
