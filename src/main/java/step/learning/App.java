@@ -1,9 +1,13 @@
 package step.learning;
 
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 import step.learning.control.ControlDemo;
 import step.learning.db.dbDemo;
 import step.learning.files.FileDemo;
 import step.learning.files.GsonDemo;
+import step.learning.ioc.ConfigModule;
+import step.learning.ioc.IocApp;
 import step.learning.oop.Library;
 
 /**
@@ -22,7 +26,13 @@ public class App
        // new Library().save();
        // new Library().load("library.txt");
        // new dbDemo().run2();
-        new dbDemo().run();
+        //new dbDemo().run();
+        Injector injector = Guice.createInjector(
+                // модули конфигурации - множественное количество
+                new ConfigModule()
+        );
+        IocApp app = injector.getInstance(IocApp.class);   // Resolve
+        app.run(); // Передача управления главному классу
     }
 
 }
