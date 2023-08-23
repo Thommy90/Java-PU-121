@@ -3,7 +3,9 @@ package step.learning.ioc;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
-import java.util.Scanner;
+import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class IocApp {
 //    @Inject
@@ -18,17 +20,28 @@ public class IocApp {
     private final PartingService byeService;
     private final PartingService goodbyeService;
     private final IHashService SHA;
+    private final Random random;
+    @Inject @Named("planetConnection")   // Можлива "змішана" інжекція - і через конструктор
+    private String connectionString ;    // і через поля - обидві працюють одночасно
+    @Inject @Named("logFilename")
+    private String logFilename ;
+    @Inject @Named("java.util")
+    private Random random2;
+    private final Logger logger; // Guice автоматически поставляет Logger (java.util)
 private final IHashService MD5;
     @Inject
     public IocApp(GreetingService helloService,
                   @Named("bye") PartingService byeService,
                   @Named("goodbye") PartingService goodbyeService,
                   @Named("SHA")  IHashService sha,
-                  @Named("MD5") IHashService md5) {
+                  @Named("java.util") Random random,
+                  Logger logger, @Named("MD5") IHashService md5) {
         this.helloService = helloService;
         this.byeService = byeService;
         this.goodbyeService = goodbyeService;
         SHA = sha;
+        this.random = random;
+        this.logger = logger;
         MD5 = md5;
     }
 
@@ -37,11 +50,76 @@ private final IHashService MD5;
        // helloService.sayHello();
         //byeService.sayGoodbye();
         //goodbyeService.sayGoodbye();
-        Scanner in = new Scanner(System.in);
-        System.out.print("Введите строку: ");
-        String text = in.nextLine();
-        MD5.GetHash(text);
-        SHA.GetHash(text);
+//        Scanner in = new Scanner(System.in);
+//        System.out.print("Введите строку: ");
+//        String text = in.nextLine();
+//        MD5.GetHash(text);
+//        SHA.GetHash(text);
+        if (connectionString == null)
+        {
+            logger.log(Level.SEVERE, "SEVERE: Служба connectionString NULL");
+        }
+        else {
+            //System.out.println(connectionString);
+            logger.log(Level.INFO, "INFO: Служба connectionString инициализирована");
+        }
+        logFilename = null;
+        if (logFilename == null)
+        {
+            logger.log(Level.SEVERE, "SEVERE: Служба logFilename NULL");
+        }
+        else {
+            //System.out.println(logFilename);
+            logger.log(Level.INFO, "INFO: Служба logFilename инициализирована");
+        }
+        if (random == null)
+        {
+            logger.log(Level.SEVERE, "SEVERE: Служба random NULL");
+        }
+        else {
+            logger.log(Level.INFO, "INFO: Служба random инициализирована");
+        }
+        if (helloService == null)
+        {
+            logger.log(Level.SEVERE, "SEVERE: Служба helloService NULL");
+        }
+        else {
+            logger.log(Level.INFO, "INFO: Служба helloService инициализирована");
+        }
+        if (byeService == null)
+        {
+            logger.log(Level.SEVERE, "SEVERE: Служба byeService NULL");
+        }
+        else {
+            logger.log(Level.INFO, "INFO: Служба byeService инициализирована");
+        }
+        if (goodbyeService == null)
+        {
+            logger.log(Level.SEVERE, "SEVERE: Служба goodbyeService NULL");
+        }
+        else {
+            logger.log(Level.INFO, "INFO: Служба goodbyeService инициализирована");
+        }
+        if (MD5 == null)
+        {
+            logger.log(Level.SEVERE, "SEVERE: Служба MD5 NULL");
+        }
+        else {
+            logger.log(Level.INFO, "INFO: Служба MD5 инициализирована");
+        }
+        if (SHA == null)
+        {
+            logger.log(Level.SEVERE, "SEVERE: Служба SHA NULL");
+        }
+        else {
+            logger.log(Level.INFO, "INFO: Служба SHA инициализирована");
+        }
+//        System.out.println( logFilename ) ;
+//        System.out.println( random.nextInt());
+//        System.out.println(random.hashCode() + " " + random2.hashCode());
+//        logger.log(Level.INFO, "Logger info");
+//        logger.log (Level.WARNING, "Logger warning");
+//        logger.log(Level.SEVERE, "Logger severe");
     }
 }
 /*
