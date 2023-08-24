@@ -9,6 +9,8 @@ import step.learning.files.GsonDemo;
 import step.learning.ioc.ConfigModule;
 import step.learning.ioc.IocApp;
 import step.learning.oop.Library;
+import step.learning.threading.PercentDemo;
+import step.learning.threading.ThreadDemo;
 
 /**
  * Hello world!
@@ -27,12 +29,22 @@ public class App
        // new Library().load("library.txt");
        // new dbDemo().run2();
         //new dbDemo().run();
+//        Injector injector = Guice.createInjector(
+//                // модули конфигурации - множественное количество
+//                new ConfigModule()
+//        );
+//        IocApp app = injector.getInstance(IocApp.class);   // Resolve
+//        app.run(); // Передача управления главному классу
+
         Injector injector = Guice.createInjector(
-                // модули конфигурации - множественное количество
+                // модулі конфігурації - довільна кількість
                 new ConfigModule()
-        );
-        IocApp app = injector.getInstance(IocApp.class);   // Resolve
-        app.run(); // Передача управления главному классу
+        ) ;
+        injector.getInstance(
+                // IocApp.class
+//                ThreadDemo.class
+                PercentDemo.class
+        ).run() ;  // Передача управління головному класу
     }
 
 }
