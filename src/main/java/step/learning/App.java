@@ -44,7 +44,7 @@ public class App
                 // IocApp.class
 //                ThreadDemo.class
                 PercentDemo.class
-        ).run() ;  // Передача управління головному класу
+        ).run(12) ;  // Передача управління головному класу
     }
 
 }
